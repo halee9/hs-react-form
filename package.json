@@ -1,5 +1,5 @@
 {
-  "name": "hs-react-form",
+  "name": "react-form",
   "version": "0.0.1",
   "description": "React form",
   "main": "build/index.js",

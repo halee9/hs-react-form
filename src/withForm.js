@@ -74,11 +74,14 @@ export function withForm(rules){
         this.setState({ validForm: _.every(this.validFields) });
       }
 
-      handleFetchedData = values => {
+      handleFetchedData = (values, validate=false) => {
         const data = _.map(values, (value, name) => {
           return { name, value };
         });
-        this.validate(data);
+        if (validate) this.validate(data);
+        else this.setState({ 
+          values: { ...this.state.values, ...values }
+        });
       }
   
       handleSubmit = (e, callback) => {

@@ -67,12 +67,10 @@ export function withForm(rules){
           errors: { ...this.state.errors, ...errors },
           validForm: _.every(this.validFields)
         }, () => {
-          // console.log("after set state")
           if (callback) callback();
         });
       }
-      
-  
+       
       componentDidMount(){
         this.setState({ validForm: _.every(this.validFields) });
       }

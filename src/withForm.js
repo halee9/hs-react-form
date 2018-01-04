@@ -17,7 +17,7 @@ const validateField = (value, rules) => {
 export function withForm(rules){
   return function(WrappedComponent){
     return class extends Component {
-      onValidates = _.reduce(rules, (acc, rule, key) => {
+      touched = _.reduce(rules, (acc, rule, key) => {
         acc[key] = false;
         return acc;
       },{});
@@ -26,7 +26,10 @@ export function withForm(rules){
         return acc;
       },{});
       state = {
-        values: {},
+        values: _.reduce(rules, (acc, rule, key) => {
+          acc[key] = '';
+          return acc;
+        },{}),
         errors: {},
         validForm: false,
       }
@@ -76,6 +79,7 @@ export function withForm(rules){
 
       handleFetchedData = (values) => {
         const data = _.map(values, (value, name) => {
+          this.touched[name] = true;
           return { name, value };
         });
         this.validate(data);
@@ -85,6 +89,7 @@ export function withForm(rules){
         this.setState({ 
           values: { ...this.state.values, ...values }
         });
+        _.map(values, (value, name) => this.touched[name] = true);
       }
   
       handleSubmit = (e, callback) => {
@@ -95,12 +100,16 @@ export function withForm(rules){
         });
         this.validate(data, callback(this.state.validForm));
       }
-    
-      handleChange = e => {
-        // console.log("On Change event")
-        const { name, value, type } = e.target;
-        if (type === 'select-one') this.onValidates[name] = true;
-        if (this.onValidates[name]) {
+
+      handleSubmitWithValues = (e, callback) => {
+        if (e) e.preventDefault();
+        const data = _.map(this.state.values, (value, name) => ({ name, value }))
+        this.validate(data, callback(this.state.validForm));
+      }
+
+      setStateOnChange = (name, value, type) => {
+        if (type.slice(0,6) === 'select-one') this.touched[name] = true;
+        if (this.touched[name]) {
           let data = [ { name, value }];
           this.validate(data, () => {
           });
@@ -109,14 +118,29 @@ export function withForm(rules){
           this.setState({ values: { ...this.state.values, [name]: value }});
         }
       }
-    
-      handleBlur = (e) => {
-        // console.log("Event blurrrr")
-        // if (e) e.stopPropagation();
-        const { name, value } = e.target;
-        this.onValidates[name] = true;
+
+      setStateOnBlur = (name, value) => {
+        this.touched[name] = true;
         const data = [ { name, value }];
         this.validate(data);
+      }
+    
+      handleChange = e => {
+        const { name, value, type } = e.target;
+        this.setStateOnChange(name, value, type);
+      }
+
+      handleChangeSUI = (e, {name, value, type}) => {
+        this.setStateOnChange(name, value, type);
+      }
+    
+      handleBlur = (e) => {
+        const { name, value } = e.target;
+        this.setStateOnBlur(name, value);
+      }
+
+      handleBlurSUI = (e, {name, value}) => {
+        this.setStateOnBlur(name, value);
       }
 
       ruleChanged = (rule) => {
@@ -133,7 +157,10 @@ export function withForm(rules){
             validForm={this.state.validForm}
             handleChange={this.handleChange}
             handleBlur={this.handleBlur}
+            handleChangeSUI={this.handleChangeSUI}
+            handleBlurSUI={this.handleBlurSUI}
             handleSubmit={this.handleSubmit}
+            handleSubmitWithValues={this.handleSubmitWithValues}
             handleFetchedData={this.handleFetchedData}
             ruleChanged={this.ruleChanged}
             setStateValues={this.setStateValues}

@@ -22,7 +22,7 @@ export function withForm(rules){
         return acc;
       },{});
       validFields = _.reduce(rules, (acc, rule, key) => {
-        acc[key] = rule[0] ? false : true;
+        acc[key] = !rule[0];
         return acc;
       },{});
       state = {
@@ -57,7 +57,7 @@ export function withForm(rules){
           const rules = this.rules[name];
           if (_.isArray(rules)){
             error = validateField(value, rules);
-            this.validFields[name] = error ? false : true;
+            this.validFields[name] = !error;
           }
           errors[name] = error;
           values[name] = value;
